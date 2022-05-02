@@ -1,0 +1,40 @@
+user www-data;
+
+# Creates a new pid. Need to change systemd file and reload systemd-daemon
+# pid /var/run/new_nginx.pid;
+
+# `auto` will spawn the same number of workers
+# on the same number of cpus in the machine
+worker_processes auto;
+
+events {
+    # can get this running: ulimit -n
+    worker_connections 1024;
+}
+
+
+http {
+
+    include mime.types;
+
+    server {
+        listen 80;
+        server_name 192.168.100.20;
+
+        root /sites/demo;
+
+        index index.php index.html;
+
+        location / {
+            try_files $uri $uri/ =404;
+        }
+
+        location ~\.php$ {
+            # Pass php requests to the php-fpm service (fastcgi)
+            # Needs apt install php-fpm
+            include fastcgi.conf;
+            fastcgi_pass unix:/run/php/php7.4-fpm.sock;
+        }
+    }
+
+}
